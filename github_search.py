@@ -1,6 +1,7 @@
 import requests
 import os
 from itertools import islice
+from config_loader import get_github_token
 
 GITHUB_API_URL = "https://api.github.com/search/repositories"
 
@@ -21,10 +22,14 @@ def search_github_repos(
     language=None,
     exclude_user=None,
     min_stars=0,
-    per_page=10
+    per_page=10,
+    created_before=None
 ):
     """
-    Runs multiple smaller queries if needed.
+    Search GitHub repositories with date filtering support.
+    
+    Args:
+        created_before: ISO date string (YYYY-MM-DD) to exclude repos created after this date
     """
     all_results = []
     seen_repos = set()
@@ -55,6 +60,9 @@ def search_github_repos(
         if min_stars > 0:
             query += f" stars:>={min_stars}"
 
+        if created_before:
+            query += f" created:<{created_before}"
+
         # truncate if still too long
         query = query[:250]
 
@@ -67,10 +75,17 @@ def search_github_repos(
 
         headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer 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"
+            "Authorization": f"Bearer {get_github_token()}"
         }
 
         response = requests.get(GITHUB_API_URL, params=params, headers=headers)
+        
+        # If authentication fails, try without token (with rate limits)
+        if response.status_code == 401:
+            print(f"Warning: GitHub token invalid, trying without authentication (limited rate)...")
+            headers = {"Accept": "application/vnd.github+json"}
+            response = requests.get(GITHUB_API_URL, params=params, headers=headers)
+            
         response.raise_for_status()
         results = response.json()
 

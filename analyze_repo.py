@@ -4,15 +4,16 @@ import re
 import shutil
 from git import Repo
 from google import genai
+from config_loader import get_gemini_api_key, get_github_token
 
 # Setup Gemini client
-client = genai.Client(api_key="AIzaSyASaYDYt5VNobHpcpsm3ngIUn1rD49UJgM")
+client = genai.Client(api_key=get_gemini_api_key())
 
 def parse_github_url(url):
     """
     Extract owner + repo name from a GitHub URL
-    e.g. https://github.com/Aaraav/Portfolio
-         → Aaraav, Portfolio
+    e.g. https://github.com/Username/RepoName.git
+         → Username, RepoName.git
     """
     pattern = r"github\.com[:/](\w[\w\-]*)/([\w\-\.]+)"
     m = re.search(pattern, url)
@@ -98,10 +99,41 @@ Project Text:
     return result
 
 def analyze_suspect_repo(repo_url):
+    import requests
+    from datetime import datetime
+    
     owner, repo_name = parse_github_url(repo_url)
     local_path = clone_repo(repo_url)
     project_text = collect_project_text(local_path)
     analysis = analyze_with_gemini(project_text)
+
+    # Get repository creation date from GitHub API
+    created_at = None
+    try:
+        github_api_url = f"https://api.github.com/repos/{owner}/{repo_name}"
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {get_github_token()}"
+        }
+        response = requests.get(github_api_url, headers=headers)
+        
+        # If authentication fails, try without token
+        if response.status_code == 401:
+            print(f"Warning: GitHub token invalid, trying without authentication...")
+            response = requests.get(github_api_url)
+            
+        if response.status_code == 200:
+            repo_data = response.json()
+            created_at = repo_data.get("created_at")
+            # Convert to YYYY-MM-DD format for GitHub search
+            if created_at:
+                created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                created_at = created_date.strftime('%Y-%m-%d')
+                print(f"Repository created on: {created_at}")
+        else:
+            print(f"Warning: Could not fetch repo info. Status: {response.status_code}")
+    except Exception as e:
+        print(f"Warning: Could not fetch creation date: {e}")
 
     result = {
         "repo_owner": owner,
@@ -109,7 +141,8 @@ def analyze_suspect_repo(repo_url):
         "repo_url": repo_url,
         "topic": analysis.get("topic", "unknown"),
         "keywords": analysis.get("keywords", []),
-        "local_path": local_path
+        "local_path": local_path,
+        "created_at": created_at
     }
     return result
 
