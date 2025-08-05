@@ -163,11 +163,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ## 🚀 Deployment
 
-For production deployment, see the included Docker files and deployment scripts:
-
-- `backend/Dockerfile`
-- `frontend/Dockerfile`
-- `backend/deploy_production.sh`
+For production deployment, this is a standard Flask + React application that can be deployed on any cloud platform supporting Python and Node.js applications.
 
 ## 🤝 Contributing
 

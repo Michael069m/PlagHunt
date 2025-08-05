@@ -32,24 +32,14 @@ const Dashboard = () => {
   const [isPending, startTransition] = useTransition();
 
   const handleAnalysis = (e) => {
-    // DEBUG 1: This is the most important log.
-    // If you don't see this, your JSX onClick/onSubmit is wrong.
-    console.log("handleAnalysis FUNCTION CALLED.");
     e.preventDefault();
 
-    // DEBUG 2: Check the state value right before the condition.
-    console.log("Current repoUrl value is:", repoUrl);
-
     if (!repoUrl) {
-      console.log("EXITING: repoUrl is empty."); // Will show if the condition fails.
       setAnalysisError("Repository URL is required");
       return;
     }
 
-    // If the logs above worked, the code will proceed.
     startTransition(async () => {
-      // DEBUG 3: If you see this, the transition has started.
-      console.log("INSIDE startTransition block.");
       setIsAnalyzing(true);
       setAnalysisError(null);
       setAnalysisResult(null);
@@ -62,18 +52,11 @@ const Dashboard = () => {
         created_at: new Date().toISOString(),
       });
 
-      // Now these will run
-      console.log("Starting analysis...");
-
       try {
         const response = await api.post("/plagiarism/analyze", {
           repo_url: repoUrl,
-          // Removed language parameter - will be auto-detected
         });
-        console.log("Analysis response:", response.data);
 
-        // Note: The optimistic state will be automatically reverted
-        // when you set the final state here.
         setAnalysisResult(response.data);
       } catch (error) {
         setAnalysisError(
@@ -177,13 +160,7 @@ const Dashboard = () => {
             </div>
 
             {/* Form Container */}
-            <div
-              className="rounded-xl p-6 shadow-lg sm:p-8 bg-black bg-opacity-90"
-              // style={{
-              //   backgroundColor: "black",
-              //   background: "black",
-              // }}
-            >
+            <div className="rounded-xl p-6 shadow-lg sm:p-8 bg-black bg-opacity-90">
               <form onSubmit={handleAnalysis} className="space-y-6">
                 <div>
                   <label
@@ -209,14 +186,6 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Replace language selection with info text */}
-                {/* <div className="text-center">
-                  <p className="text-sm text-gray-400 mb-4">
-                    <Code className="inline h-4 w-4 mr-1" />
-                    <strong>Smart Language Detection:</strong> We'll automatically detect Python, JavaScript, TypeScript, Java, C++, Rust, Solidity, and 20+ other programming languages in your repository for accurate analysis.
-                  </p>
-                </div> */}
 
                 <button
                   type="submit"

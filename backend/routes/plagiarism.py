@@ -72,18 +72,37 @@ def assess_project_uniqueness(suspect_info, candidate_repos):
     else:
         topic_uniqueness = 0.6
     
-    # Calculate keyword overlap with candidates
+    # Calculate keyword overlap with candidates - FIX THE ERROR HERE
     total_overlap = 0
-    for repo in candidate_repos:
-        repo_desc = repo.get('description', '').lower()
-        repo_name = repo.get('name', '').lower()
-        
-        keyword_matches = sum(1 for keyword in suspect_keywords 
-                            if keyword in repo_desc or keyword in repo_name)
-        overlap_ratio = keyword_matches / max(len(suspect_keywords), 1)
-        total_overlap += overlap_ratio
+    valid_candidates = 0
     
-    avg_keyword_overlap = total_overlap / max(len(candidate_repos), 1)
+    for repo in candidate_repos:
+        try:
+            # Safe handling of None values
+            repo_desc = repo.get('description') or ''
+            repo_name = repo.get('name') or ''
+            
+            # Convert to lowercase safely
+            repo_desc = repo_desc.lower() if repo_desc else ''
+            repo_name = repo_name.lower() if repo_name else ''
+            
+            keyword_matches = sum(1 for keyword in suspect_keywords 
+                                if keyword and (keyword in repo_desc or keyword in repo_name))
+            
+            if len(suspect_keywords) > 0:
+                overlap_ratio = keyword_matches / len(suspect_keywords)
+                total_overlap += overlap_ratio
+                valid_candidates += 1
+                
+        except (AttributeError, TypeError) as e:
+            print(f"Warning: Error processing repository {repo.get('name', 'unknown')}: {e}")
+            continue
+    
+    # Calculate average overlap only from valid candidates
+    if valid_candidates > 0:
+        avg_keyword_overlap = total_overlap / valid_candidates
+    else:
+        avg_keyword_overlap = 0.0
     
     # Higher overlap = less unique
     keyword_uniqueness = 1.0 - min(avg_keyword_overlap, 0.8)
