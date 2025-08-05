@@ -1,252 +1,410 @@
-# GitHub Repository Plagiarism Detection System
+# PlagHunt - Advanced Plagiarism Detection System
 
-A comprehensive, production-ready plagiarism detection system that analyzes GitHub repositories for potential code plagiarism using AI-powered similarity analysis and advanced comparison algorithms.
+A modern plagiarism detection system built with **React 19** frontend and **Flask + MongoDB** backend.
 
-## Features
+## 🚀 Quick Start
 
-### 🔍 Core Detection Capabilities
+### Prerequisites
 
-- **Repository Analysis**: Automated extraction of keywords, topics, and metadata from suspect repositories
-- **GitHub Search**: Advanced search with date filtering to find candidate repositories
-- **Multi-layered Comparison**:
-  - File structure similarity analysis
-  - README content comparison using TF-IDF cosine similarity
-  - Code file similarity analysis across common files
-- **Date-based Filtering**: Automatically excludes repositories created after the suspect repository
+1. **Python 3.8+** installed
+2. **Node.js 18+** and npm installed
+3. **MongoDB** installed and running
+4. **Git** installed
 
-### 🛡️ Security & Production Features
-
-- **Secure Token Management**: API tokens stored in environment files (not in source code)
-- **Fallback Authentication**: Graceful degradation when API tokens are invalid
-- **Error Handling**: Comprehensive error handling and logging
-- **Rate Limit Management**: Efficient API usage with chunked search queries
-
-### 🚀 Deployment Options
-
-- **CLI Tool**: Direct command-line interface for quick analysis
-- **REST API**: Flask-based API for integration with web applications
-- **Node.js Integration**: Ready-to-use client examples for backend integration
-
-## Quick Start
-
-### 1. Installation
+### 1. Install MongoDB (if not installed)
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd Plagiarism_detector
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Install Node.js dependencies (for client examples)
-npm install
+# macOS with Homebrew
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
 ```
 
-### 2. Configuration
-
-Copy the configuration template and add your API tokens:
+### 2. Clone and Setup
 
 ```bash
-cp config.env.template config.env
+git clone <your-repo-url>
+cd PlagHunt
 ```
 
-Edit `config.env` and add your tokens:
+### 3. One-Command Startup
+
+```bash
+# Start everything with one command
+./start_plaghunt.sh
+```
+
+This will automatically:
+
+- Start MongoDB (if not running)
+- Install backend dependencies in virtual environment
+- Install frontend dependencies
+- Start backend on http://localhost:5001
+- Start frontend on http://localhost:5174
+
+### 4. Manual Setup (Alternative)
+
+#### Backend Setup
+
+```bash
+cd backend
+# Use the virtual environment python directly
+venv/bin/python app.py
+```
+
+#### Frontend Setup (in new terminal)
+
+```bash
+cd frontend
+npm run dev
+```
+
+## 🔧 Configuration
+
+### Required API Keys
+
+1. **GitHub Token**: Get from https://github.com/settings/tokens
+2. **Gemini AI Key**: Get from https://aistudio.google.com/app/apikey
+
+### Setup Configuration
+
+Edit `backend/config.env` and add your API keys:
 
 ```env
+# GitHub Personal Access Token
 GITHUB_TOKEN=your_github_token_here
+
+# Gemini AI API Key
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-### 3. Usage
+## 🌟 Features
 
-#### CLI Analysis
+- **User Authentication**: Secure JWT-based authentication
+- **Repository Analysis**: Analyze GitHub repositories for potential plagiarism
+- **Smart Search**: AI-powered candidate repository discovery
+- **History Tracking**: Keep track of all your analyses
+- **Modern UI**: Beautiful React 19 interface with Tailwind CSS
+- **Real-time Results**: Live analysis results and progress tracking
 
-```bash
-python main.py
-```
+## 🛠️ Technology Stack
 
-#### API Server
+### Backend
 
-```bash
-python api.py
-```
+- **Flask**: Python web framework
+- **MongoDB**: NoSQL database
+- **JWT**: Authentication
+- **Gemini AI**: Code analysis
+- **GitHub API**: Repository data
+- **scikit-learn**: Text similarity analysis
 
-#### Node.js Integration
+### Frontend
 
-```bash
-node nodejs_client_example.js
-```
+- **React 19**: Latest React with new features
+- **Tailwind CSS**: Utility-first CSS framework
+- **Axios**: HTTP client
+- **React Router**: Navigation
+- **Lucide Icons**: Modern icon library
 
-## API Documentation
+## 📊 API Endpoints
 
-### Endpoints
+### Authentication
 
-#### Health Check
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/verify` - Token verification
 
-```http
-GET /health
-```
+### Plagiarism Detection
 
-#### Analyze Repository for Plagiarism
+- `POST /api/plagiarism/analyze` - Analyze repository
+- `GET /api/plagiarism/history` - Get analysis history
+- `GET /api/plagiarism/result/<id>` - Get specific result
+- `DELETE /api/plagiarism/result/<id>` - Delete result
 
-```http
-POST /analyze-plagiarism
-Content-Type: application/json
+### Health Check
 
-{
-  "repo_url": "https://github.com/username/repo",
-  "language": "Python",
-  "min_stars": 5,
-  "per_page": 10,
-  "max_candidates": 5
-}
-```
+- `GET /api/health` - Service health status
 
-#### Analyze Single Repository
+## 🚧 Recent Fixes & Improvements
 
-```http
-POST /analyze-repo
-Content-Type: application/json
+- ✅ Fixed Google Generative AI import issues
+- ✅ Corrected config file path resolution
+- ✅ Updated frontend to use proper App component
+- ✅ Added comprehensive error handling
+- ✅ Created automated startup scripts
+- ✅ Fixed authentication middleware
+- ✅ Simplified plagiarism analysis for reliability
+- ✅ Updated dependencies to latest versions
+- ✅ Added proper virtual environment support
 
-{
-  "repo_url": "https://github.com/username/repo"
-}
-```
+## 🔍 How It Works
 
-#### Search GitHub Repositories
+1. **User Registration/Login**: Create account or sign in
+2. **Repository Submission**: Enter GitHub repository URL
+3. **Candidate Discovery**: System searches for similar repositories
+4. **Analysis**: AI analyzes code similarity and structure
+5. **Results**: Get detailed plagiarism report with similarity scores
+6. **History**: View and manage all previous analyses
 
-```http
-POST /search-repos
-Content-Type: application/json
+## 🛡️ Security Features
 
-{
-  "keywords": ["react", "portfolio"],
-  "topic": "portfolio website",
-  "language": "JavaScript",
-  "exclude_user": "username",
-  "min_stars": 5,
-  "per_page": 10,
-  "created_before": "2023-01-01"
-}
-```
+- JWT token-based authentication
+- Password hashing with bcrypt
+- API rate limiting
+- Input validation and sanitization
+- CORS protection
 
-For detailed API documentation, see [API_README.md](API_README.md).
+## 📝 Development Notes
 
-## Architecture
+- Backend runs on port 5001 (changed from 5000 due to macOS AirPlay conflict)
+- Frontend runs on port 5174 (Vite auto-increments if 5173 is busy)
+- MongoDB runs on default port 27017
+- All dependencies are managed with virtual environments
 
-### Core Modules
+## 🚀 Deployment
 
-- **`analyze_repo.py`**: Repository analysis and metadata extraction using Gemini AI
-- **`github_search.py`**: GitHub API integration with advanced search capabilities
-- **`compare_utils.py`**: Similarity analysis algorithms (TF-IDF, cosine similarity)
-- **`repo_utils.py`**: Git repository management utilities
-- **`config_loader.py`**: Secure configuration and token management
-- **`api.py`**: Flask REST API server
+For production deployment, see the included Docker files and deployment scripts:
 
-### Security Framework
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `backend/deploy_production.sh`
 
-- **Token Security**: API tokens stored in `config.env` (excluded from version control)
-- **Fallback Authentication**: Graceful degradation for invalid tokens
-- **Input Validation**: Comprehensive validation for all API endpoints
-- **Error Sanitization**: Safe error messages without sensitive information exposure
-
-## Detection Algorithm
-
-The system uses a multi-layered approach to detect potential plagiarism:
-
-1. **Repository Metadata Analysis**: Extract keywords, topics, and creation dates
-2. **Candidate Discovery**: Search GitHub for repositories with similar characteristics
-3. **Date Filtering**: Exclude repositories created after the suspect repository
-4. **Similarity Analysis**:
-   - **File Structure**: Compare directory structures and file names
-   - **Content Analysis**: TF-IDF cosine similarity for text content
-   - **Code Comparison**: Multi-file code similarity analysis
-
-### Detection Thresholds
-
-- **File Structure Similarity**: > 70% overlap triggers flag
-- **README Similarity**: > 80% cosine similarity triggers flag
-- **Code Similarity**: > 80% average similarity triggers flag
-
-## Configuration
-
-### Environment Variables
-
-| Variable         | Description                  | Required |
-| ---------------- | ---------------------------- | -------- |
-| `GITHUB_TOKEN`   | GitHub Personal Access Token | Yes      |
-| `GEMINI_API_KEY` | Google Gemini AI API Key     | Yes      |
-
-### Search Parameters
-
-| Parameter        | Description                   | Default |
-| ---------------- | ----------------------------- | ------- |
-| `min_stars`      | Minimum repository stars      | 5       |
-| `per_page`       | Results per search page       | 10      |
-| `max_candidates` | Maximum candidates to analyze | 5       |
-
-## Security Considerations
-
-- **Never commit API tokens** to version control
-- Use environment variables or secure configuration files
-- Regularly rotate API tokens
-- Monitor API usage and rate limits
-- Validate all user inputs
-
-For detailed security information, see [SECURITY.md](SECURITY.md).
-
-## Development
-
-### Running Tests
-
-```bash
-python test_api.py
-```
-
-### Code Style
-
-The project follows PEP 8 Python style guidelines with comprehensive docstrings and type hints.
-
-### Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
+3. Make your changes
+4. Test thoroughly
 5. Submit a pull request
 
-## Dependencies
-
-### Python Dependencies
-
-- `flask`: Web framework for REST API
-- `flask-cors`: CORS support for web integration
-- `requests`: HTTP client for GitHub API
-- `scikit-learn`: Machine learning algorithms for similarity analysis
-- `gitpython`: Git repository operations
-- `python-dotenv`: Environment variable management
-
-### Optional Dependencies
-
-- `google-generativeai`: Gemini AI integration (for enhanced analysis)
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+### 3. Start Backend
 
-For issues, questions, or contributions, please:
+```bash
+cd backend
+chmod +x start_backend.sh
+./start_backend.sh
+```
 
-1. Check existing issues in the GitHub repository
-2. Create a new issue with detailed information
-3. Follow the contribution guidelines
+The backend will:
 
-## Roadmap
+- Create a virtual environment
+- Install Python dependencies
+- Start the Flask server on `http://localhost:5000`
 
-- [ ] Machine learning model training for improved detection
-- [ ] Support for additional version control systems
-- [ ] Advanced code structure analysis
-- [ ] Real-time monitoring dashboard
-- [ ] Integration with CI/CD pipelines
+### 4. Start Frontend (in a new terminal)
+
+```bash
+cd frontend
+chmod +x start_frontend.sh
+./start_frontend.sh
+```
+
+The frontend will:
+
+- Install Node.js dependencies
+- Start the React dev server on `http://localhost:5173`
+
+## 🎨 Features
+
+### Frontend (React 19)
+
+- ✅ **Modern UI** - Black background with yellow/red accents
+- ✅ **Authentication** - Login/Register with JWT
+- ✅ **React 19 Features**:
+  - `useActionState` for form handling
+  - `useOptimistic` for optimistic UI updates
+  - `use()` hook for data fetching
+- ✅ **Dashboard** - GitHub URL input and analysis history
+- ✅ **Responsive Design** - Works on all devices
+
+### Backend (Flask + MongoDB)
+
+- ✅ **RESTful API** - Clean API endpoints
+- ✅ **Authentication** - JWT-based auth with bcrypt
+- ✅ **MongoDB Integration** - User data and analysis history
+- ✅ **Plagiarism Analysis** - GitHub repository analysis
+- ✅ **History Management** - Save and retrieve analysis results
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+Create or edit `backend/config.env`:
+
+```env
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/
+DB_NAME=plagiarism_detector
+
+# JWT Configuration
+JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
+
+# GitHub API Configuration
+GITHUB_TOKEN=your_github_token_here
+
+# Google AI Configuration (Optional)
+GOOGLE_API_KEY=your_google_api_key_here
+
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=True
+```
+
+### Frontend Configuration
+
+The frontend automatically connects to `http://localhost:5000` for the backend API.
+
+## 📱 Usage
+
+1. **Open your browser** to `http://localhost:5173`
+2. **Register** a new account or **login**
+3. **Enter a GitHub repository URL** in the dashboard
+4. **Select the programming language**
+5. **Click "Start Analysis"** to begin plagiarism detection
+6. **View results** and check your **analysis history**
+
+## 🛠️ Manual Setup (if scripts don't work)
+
+### Backend Setup
+
+```bash
+cd backend
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Start the server
+python app.py
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Upgrade to React 19 (if needed)
+npm install react@19 react-dom@19
+
+# Start development server
+npm run dev
+```
+
+## 🔍 API Endpoints
+
+### Authentication
+
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/refresh` - Refresh token
+
+### Plagiarism Analysis
+
+- `POST /api/plagiarism/analyze` - Analyze repository
+- `GET /api/plagiarism/history` - Get analysis history
+- `GET /api/plagiarism/result/<id>` - Get specific result
+- `DELETE /api/plagiarism/result/<id>` - Delete result
+
+### Health Check
+
+- `GET /api/health` - Check API status
+
+## 🐛 Troubleshooting
+
+### MongoDB Connection Issues
+
+```bash
+# Check if MongoDB is running
+brew services list | grep mongodb
+
+# Start MongoDB
+brew services start mongodb-community
+
+# Check MongoDB status
+mongosh --eval "db.runCommand('ping')"
+```
+
+### Python Dependencies Issues
+
+```bash
+# Update pip
+pip install --upgrade pip
+
+# Clear pip cache
+pip cache purge
+
+# Reinstall dependencies
+pip install -r requirements.txt --force-reinstall
+```
+
+### Node.js Issues
+
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Delete node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Port Already in Use
+
+```bash
+# Kill process on port 5000 (backend)
+lsof -ti:5000 | xargs kill -9
+
+# Kill process on port 5173 (frontend)
+lsof -ti:5173 | xargs kill -9
+```
+
+## 🚀 Production Deployment
+
+### Backend
+
+1. Set `FLASK_ENV=production` in config.env
+2. Change `JWT_SECRET_KEY` to a secure random string
+3. Update MongoDB URI for production database
+4. Use a WSGI server like Gunicorn
+
+### Frontend
+
+1. Build the production version: `npm run build`
+2. Serve the `dist` folder with a web server
+3. Update API URL in production
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+If you encounter any issues:
+
+1. Check the troubleshooting section above
+2. Ensure all prerequisites are installed
+3. Check that MongoDB is running
+4. Verify environment variables are set correctly
+
+---
+
+**Happy Coding! 🎉**

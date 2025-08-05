@@ -14,8 +14,9 @@ def load_config() -> dict:
     """
     config = {}
     
-    # Try to load from config.env file first
-    config_file = os.path.join(os.path.dirname(__file__), 'config.env')
+    # Try to load from config.env file first (in backend directory)
+    backend_dir = os.path.dirname(os.path.dirname(__file__))  # Go up two levels to backend/
+    config_file = os.path.join(backend_dir, 'config.env')
     if os.path.exists(config_file):
         try:
             with open(config_file, 'r') as f:

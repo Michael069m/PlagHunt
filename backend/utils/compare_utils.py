@@ -19,10 +19,24 @@ def compare_file_structure(path1, path2):
     return overlap_ratio, overlap
 
 def cosine_similarity_text(text1, text2):
-    vectorizer = TfidfVectorizer()
-    tfidf = vectorizer.fit_transform([text1, text2])
-    similarity = (tfidf * tfidf.T).A[0,1]
-    return similarity
+    if not text1 or not text2:
+        return 0.0
+    
+    try:
+        vectorizer = TfidfVectorizer()
+        tfidf = vectorizer.fit_transform([text1, text2])
+        similarity_matrix = (tfidf * tfidf.T)
+        
+        # Handle both sparse and dense matrices
+        if hasattr(similarity_matrix, 'A'):
+            similarity = similarity_matrix.A[0, 1]
+        else:
+            similarity = similarity_matrix[0, 1]
+            
+        return float(similarity)
+    except Exception as e:
+        print(f"Cosine similarity error: {e}")
+        return 0.0
 def compare_code_files(path1, path2):
     files1 = list_files(path1)
     files2 = list_files(path2)
