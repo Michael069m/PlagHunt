@@ -3,10 +3,10 @@ from flask_cors import CORS
 import json
 import os
 import traceback
-from analyze_repo import analyze_suspect_repo
-from github_search import search_github_repos
-from repo_utils import clone_repo
-from compare_utils import (
+from utils.analyze_repo import analyze_suspect_repo
+from utils.github_search import search_github_repos
+from utils.repo_utils import clone_repo
+from utils.compare_utils import (
     compare_file_structure,
     cosine_similarity_text,
     compare_code_files
@@ -298,14 +298,14 @@ def search_repos():
 if __name__ == '__main__':
     # Create necessary directories
     os.makedirs("candidates", exist_ok=True)
-    
-    print("🚀 Starting Plagiarism Detection API on http://localhost:3009")
+
+    print("🚀 Starting Plagiarism Detection API on http://localhost:5001")
     print("📋 Available endpoints:")
     print("  GET  /health")
-    print("  POST /analyze-plagiarism")
+    print("  POST /analyze-plagiarism") 
     print("  POST /analyze-repo-only") 
     print("  POST /search-repos")
     print("🛑 Press Ctrl+C to stop\n")
-    
+
     # Run the Flask app - disable debug mode to prevent auto-restart on file changes
-    app.run(host='0.0.0.0', port=3009, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)

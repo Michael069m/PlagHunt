@@ -1,10 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from middleware.auth import auth_required, optional_auth
 from models.plagiarism_result import PlagiarismResult
 import requests
 import re
 import os
 import traceback
+import time
 from utils.analyze_repo import analyze_suspect_repo
 from utils.github_search import search_github_repos
 from utils.repo_utils import clone_repo
@@ -137,6 +138,20 @@ def simple_github_search(language="Python", per_page=10):
         print(f"GitHub search error: {e}")
     
     return []
+
+def stream_logs():
+    """Stream logs to the frontend using SSE"""
+    def generate():
+        yield "data: Starting analysis...\n\n"
+        time.sleep(1)
+        yield "data: Analyzing repository...\n\n"
+        time.sleep(1)
+        yield "data: Searching for candidate repositories...\n\n"
+        time.sleep(1)
+        yield "data: Comparing file structures...\n\n"
+        time.sleep(1)
+        yield "data: Analysis complete!\n\n"
+    return Response(generate(), content_type='text/event-stream')
 
 @plagiarism_bp.route('/analyze', methods=['POST'])
 @auth_required
@@ -539,3 +554,8 @@ def delete_result(result_id):
     except Exception as e:
         print(f"Error deleting result: {e}")
         return jsonify({"error": "Failed to delete result"}), 500
+
+@plagiarism_bp.route('/stream-logs', methods=['GET'])
+@auth_required
+def stream_logs_endpoint():
+    return stream_logs()
