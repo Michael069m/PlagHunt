@@ -12,15 +12,15 @@ from utils.compare_utils import (
     compare_code_files
 )
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for Node.js backend communication
+application = Flask(__name__)
+CORS(application)  # Enable CORS for Node.js backend communication
 
-@app.route('/health', methods=['GET'])
+@application.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "message": "Plagiarism Detection API is running"})
 
-@app.route('/analyze-plagiarism', methods=['POST'])
+@application.route('/analyze-plagiarism', methods=['POST'])
 def analyze_plagiarism():
     """
     Main endpoint to analyze a repository for plagiarism
@@ -198,7 +198,7 @@ def analyze_plagiarism():
             "message": error_message
         }), 500
 
-@app.route('/analyze-repo-only', methods=['POST'])
+@application.route('/analyze-repo-only', methods=['POST'])
 def analyze_repo_only():
     """
     Endpoint to analyze a single repository without plagiarism detection
@@ -239,7 +239,7 @@ def analyze_repo_only():
             "message": error_message
         }), 500
 
-@app.route('/search-repos', methods=['POST'])
+@application.route('/search-repos', methods=['POST'])
 def search_repos():
     """
     Endpoint to search GitHub repositories
@@ -307,5 +307,5 @@ if __name__ == '__main__':
     print("  POST /search-repos")
     print("🛑 Press Ctrl+C to stop\n")
 
-    # Run the Flask app - disable debug mode to prevent auto-restart on file changes
-    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)
+    # Run the Flask application - disable debug mode to prevent auto-restart on file changes
+    application.run(host='0.0.0.0', port=5001, debug=False, threaded=True)

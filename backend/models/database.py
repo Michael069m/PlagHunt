@@ -1,9 +1,6 @@
-from pymongo import MongoClient
-from datetime import datetime
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
+import certifi
+from pymongo import MongoClient
 
 class Database:
     def __init__(self):
@@ -12,14 +9,19 @@ class Database:
         self.connect()
     
     def connect(self):
-        """Connect to MongoDB"""
+        """Connect to MongoDB""" 
         try:
-            mongo_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
-            self.client = MongoClient(mongo_uri)
-            self.db = self.client[os.getenv('DB_NAME', 'plagiarism_detector')]
+            mongo_uri = os.environ.get('MONGODB_URI')
+            if not mongo_uri:
+                raise ValueError("MONGODB_URI is not set. Please check your config.env file.")
+            
+            # Use certifi to provide the SSL certificate bundle
+            self.client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
+            
+            self.db = self.client[os.environ.get('DB_NAME', 'plagiarism_detector')]
             # Test connection
             self.client.admin.command('ping')
-            print("Successfully connected to MongoDB")
+            print("Successfully connected to MongoDB Atlas")
         except Exception as e:
             print(f"Error connecting to MongoDB: {e}")
             raise e

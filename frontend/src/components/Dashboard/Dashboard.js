@@ -1,4 +1,4 @@
-import React, { useState, useOptimistic } from "react";
+import React, { useState, useOptimistic, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import {
   Search,
@@ -31,7 +31,7 @@ const Dashboard = () => {
   );
   const [isPending, startTransition] = useTransition();
 
-  const handleAnalysis = (e) => {
+  const handleAnalysis = async (e) => {
     e.preventDefault();
 
     if (!repoUrl) {
@@ -39,33 +39,68 @@ const Dashboard = () => {
       return;
     }
 
-    startTransition(async () => {
-      setIsAnalyzing(true);
-      setAnalysisError(null);
-      setAnalysisResult(null);
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    setAnalysisResult(null);
 
-      const optimisticId = Date.now().toString();
-      addOptimisticAnalysis({
-        id: optimisticId,
+    const optimisticId = Date.now().toString();
+    addOptimisticAnalysis({
+      id: optimisticId,
+      repo_url: repoUrl,
+      status: "analyzing",
+      created_at: new Date().toISOString(),
+    });
+
+    try {
+      const response = await api.post("/plagiarism/analyze", {
         repo_url: repoUrl,
-        status: "analyzing",
-        created_at: new Date().toISOString(),
       });
 
-      try {
-        const response = await api.post("/plagiarism/analyze", {
-          repo_url: repoUrl,
-        });
+      const data = response.data;
 
-        setAnalysisResult(response.data);
-      } catch (error) {
-        setAnalysisError(
-          error.response?.data?.error || "Analysis failed. Please try again."
-        );
-      } finally {
-        setIsAnalyzing(false);
-      }
-    });
+      // Generate logs based on actual analysis results
+      const analysisLogs = [
+        `🔍 Starting plagiarism analysis...`,
+        `📥 Analyzing repository: ${
+          data.suspect_repo?.name || "target repository"
+        }`,
+        `� Detected languages: ${
+          data.suspect_repo?.primary_languages?.join(", ") || "Unknown"
+        }`,
+        `🔎 Extracted ${
+          data.suspect_repo?.keywords?.length || 0
+        } keywords from repository`,
+        `🌐 Searching GitHub for similar repositories...`,
+        `📊 Found ${
+          data.summary?.total_candidates_checked || 0
+        } candidate repositories to analyze`,
+        `📁 Analyzing file structures and code patterns...`,
+        `� Completed similarity analysis`,
+        data.plagiarism_detected
+          ? `⚠️ Plagiarism detected! Risk level: ${
+              data.summary?.overall_risk_level || "Unknown"
+            }`
+          : `✅ No significant plagiarism detected`,
+        `📈 Highest similarity score: ${
+          data.summary?.highest_similarity || 0
+        }%`,
+        `🎯 Project uniqueness: ${
+          data.uniqueness_assessment?.overall_uniqueness || "N/A"
+        }%`,
+        `✅ Analysis completed successfully!`,
+      ];
+
+      setAnalysisResult(data);
+    } catch (error) {
+      console.error("Analysis error:", error);
+      setAnalysisError(
+        error.response?.data?.error ||
+          error.response?.data?.details ||
+          "Analysis failed. Please try again."
+      );
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleLogout = () => {
