@@ -24,13 +24,17 @@ def create_app():
     application.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # Tokens don't expire
     
     # Initialize extensions
-    CORS(application, resources={r"/api/*": {"origins": [
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://plaghunt.netlify.app').rstrip('/')
+    origins = list(set([
+        frontend_url,
+        f"{frontend_url}/",
         "https://plaghunt.netlify.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000"
-    ]}}, supports_credentials=True)
+    ]))
+    CORS(application, resources={r"/api/*": {"origins": origins}}, supports_credentials=True)
     jwt = JWTManager(application)
     
     # Register blueprints
