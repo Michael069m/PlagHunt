@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,7 +12,18 @@ const AuthForm = () => {
     password: "",
     confirmPassword: "",
   });
-  const { login, register, loading, error, clearError } = useAuth();
+  const { login, register, googleLogin, loading, error, clearError } = useAuth();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    clearError();
+    if (credentialResponse.credential) {
+      await googleLogin(credentialResponse.credential);
+    }
+  };
+
+  const handleGoogleError = () => {
+    console.error("Google Sign-In failed");
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -194,7 +206,31 @@ const AuthForm = () => {
                 )}
               </button>
             </form>
-            <br className="h-3" />
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-gray-900 text-gray-400">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* Google OAuth Button */}
+            <div className="flex justify-center my-4">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="filled_black"
+                shape="pill"
+                size="large"
+                width="100%"
+                text={isLogin ? "signin_with" : "signup_with"}
+              />
+            </div>
 
             {/* Toggle Form */}
             <div className="mt-6 text-center">

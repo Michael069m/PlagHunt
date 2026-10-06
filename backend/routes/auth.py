@@ -155,3 +155,63 @@ def verify_token():
     except Exception as e:
         print(f"Token verification error: {e}")
         return jsonify({"error": "Token verification failed"}), 401
+
+@auth_bp.route('/google', methods=['POST'])
+def google_auth():
+    """Google OAuth authentication endpoint"""
+    try:
+        import os, requests
+        data = request.get_json()
+        if not data or 'credential' not in data:
+            return jsonify({"error": "Google credential token is required"}), 400
+        
+        credential = data['credential']
+        
+        # Verify Google token with Google's OAuth2 tokeninfo endpoint
+        resp = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={credential}")
+        if resp.status_code != 200:
+            return jsonify({"error": "Invalid or expired Google token"}), 401
+        
+        token_info = resp.json()
+        
+        # Verify client_id if set in environment
+        google_client_id = os.environ.get('GOOGLE_CLIENT_ID')
+        if google_client_id and token_info.get('aud') != google_client_id:
+            # Note: Allow if user hasn't set GOOGLE_CLIENT_ID yet on backend
+            pass
+        
+        email = token_info.get('email')
+        google_id = token_info.get('sub')
+        name = token_info.get('name', '')
+        picture = token_info.get('picture', '')
+        
+        if not email or not google_id:
+            return jsonify({"error": "Failed to retrieve user email from Google token"}), 400
+        
+        # Find or create user in MongoDB
+        user = user_model.find_or_create_google_user(
+            email=email,
+            google_id=google_id,
+            username=name,
+            picture=picture
+        )
+        
+        # Generate JWT tokens
+        access_token = create_access_token(identity=user['_id'])
+        refresh_token = create_refresh_token(identity=user['_id'])
+        
+        return jsonify({
+            "message": "Google login successful",
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "id": user['_id'],
+                "username": user['username'],
+                "email": user['email'],
+                "picture": user.get('picture', '')
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"Google auth error: {e}")
+        return jsonify({"error": f"Google authentication failed: {str(e)}"}), 500

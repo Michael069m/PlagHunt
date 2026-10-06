@@ -1,7 +1,13 @@
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-import os
+from dotenv import load_dotenv
+
+# Load config.env if present
+env_path = os.path.join(os.path.dirname(__file__), 'config.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
 
 # Import routes
 from routes.auth import auth_bp
@@ -18,7 +24,13 @@ def create_app():
     application.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # Tokens don't expire
     
     # Initialize extensions
-    CORS(application, origins=["https://plaghunt.netlify.app"])  # Allow React frontend
+    CORS(application, resources={r"/api/*": {"origins": [
+        "https://plaghunt.netlify.app",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]}}, supports_credentials=True)
     jwt = JWTManager(application)
     
     # Register blueprints

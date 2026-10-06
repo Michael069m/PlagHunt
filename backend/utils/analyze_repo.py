@@ -222,23 +222,30 @@ Project Text:
 {text}
     """
 
-    response = genai.GenerativeModel('gemini-2.5-flash').generate_content(prompt)
-    text_response = response.text.strip()
-
-    # Remove ```json fences if present
-    text_response = re.sub(r"^```json", "", text_response, flags=re.IGNORECASE)
-    text_response = re.sub(r"^```", "", text_response)
-    text_response = re.sub(r"```$", "", text_response)
-    text_response = text_response.strip()
-
     try:
-        result = json.loads(text_response)
-    except json.JSONDecodeError:
-        result = {
-            "topic": "unknown",
-            "keywords": []
+        response = genai.GenerativeModel('gemini-3.6-flash').generate_content(prompt)
+        text_response = response.text.strip()
+
+        # Remove ```json fences if present
+        text_response = re.sub(r"^```json", "", text_response, flags=re.IGNORECASE)
+        text_response = re.sub(r"^```", "", text_response)
+        text_response = re.sub(r"```$", "", text_response)
+        text_response = text_response.strip()
+
+        try:
+            result = json.loads(text_response)
+        except json.JSONDecodeError:
+            result = {
+                "topic": "software project",
+                "keywords": ["code", "software"]
+            }
+        return result
+    except Exception as e:
+        print(f"Warning: Gemini AI analysis failed ({e}). Using fallback keyword extraction.")
+        return {
+            "topic": "software project",
+            "keywords": ["code", "software", "repository", "project"]
         }
-    return result
 
 def analyze_suspect_repo(repo_url):
     import requests

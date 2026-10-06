@@ -178,10 +178,33 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "CLEAR_ERROR" });
   };
 
+  // Google Login function
+  const googleLogin = async (credential) => {
+    dispatch({ type: "LOGIN_START" });
+    try {
+      const response = await api.post("/auth/google", { credential });
+      const { access_token, user } = response.data;
+
+      localStorage.setItem("token", access_token);
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: { user, token: access_token },
+      });
+
+      return { success: true };
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.error || "Google Sign-In failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: errorMessage });
+      return { success: false, error: errorMessage };
+    }
+  };
+
   const value = {
     ...state,
     login,
     register,
+    googleLogin,
     logout,
     clearError,
     api,

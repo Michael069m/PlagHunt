@@ -1,4 +1,4 @@
 const API_BASE_URL =
-  "http://plaghunt-env.eba-qnms8mua.eu-north-1.elasticbeanstalk.com/api";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
 
 export default API_BASE_URL;
